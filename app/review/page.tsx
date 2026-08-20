@@ -166,8 +166,8 @@ export default function ReviewPage() {
   });
   const [initialValues] = useState(values);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({
-    equipment: true,
-    "rental-expenses": true,
+    equipment: false,
+    "rental-expenses": false,
     "property-protection": false,
     "additional-coverage": false,
   });
@@ -237,7 +237,10 @@ export default function ReviewPage() {
                 </p>
               </div>
               {dirty && (
-                <span className="inline-flex items-center gap-1.5 text-[13px] font-medium text-[#6C757D]">
+                <span
+                  className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-[13px] font-medium text-[#8a5a1f]"
+                  style={{ backgroundColor: "rgba(240, 160, 64, 0.14)" }}
+                >
                   <span
                     className="h-1.5 w-1.5 rounded-full"
                     style={{ backgroundColor: "#F0A040" }}
@@ -325,7 +328,13 @@ export default function ReviewPage() {
                 type="button"
                 onClick={reset}
                 disabled={!dirty && !reratedPremium}
-                className="text-[15px] font-medium text-[#6C757D] transition hover:text-[#212529] disabled:opacity-40"
+                className="inline-flex items-center justify-center rounded-[12px] bg-white text-[#212529] transition hover:bg-[#F5F5F5] disabled:opacity-40"
+                style={{
+                  fontSize: "17px",
+                  fontWeight: 500,
+                  padding: "8px 20px",
+                  boxShadow: "0 4px 14px rgba(0, 0, 0, 0.08)",
+                }}
               >
                 Discard changes
               </button>
