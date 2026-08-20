@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { Combobox } from "@/components/Combobox";
 import { ChevronDown, ChevronRight, Check } from "lucide-react";
-import { ENHANCED_COVERAGE_GROUPS, OPTIONAL_FORMS } from "@/lib/coverages";
+import { ENHANCED_COVERAGE_GROUPS } from "@/lib/coverages";
 import Link from "next/link";
 
 /* ---------- Carrier logos (use PNG assets) ---------- */
@@ -303,23 +303,16 @@ export default function ReviewPage() {
                 );
               })}
 
-              {/* Optional Forms */}
-              <div className="rounded-xl border border-[#EAEAEA] px-5 py-5">
-                <div className="mb-3 text-[17px] font-semibold text-btis-navy">
-                  Optional Forms
-                </div>
-                <div className="grid gap-2">
-                  {OPTIONAL_FORMS.map((f) => (
-                    <label
-                      key={f}
-                      className="inline-flex cursor-pointer items-center gap-3 text-[15px] text-[#212529]"
-                    >
-                      <input type="checkbox" className="brand" />
-                      {f}
-                    </label>
-                  ))}
-                </div>
-              </div>
+              {/*
+                Optional Forms (Existing Fire Exclusion, Locked Vehicle –
+                Restricted Theft Coverage Endorsement, Crane Exclusion) are
+                intentionally NOT shown in the UI:
+                  – Locked Vehicle is auto-included for Great American quotes
+                    silently on the backend
+                  – Fire Exclusion and Crane Exclusion are never applied by
+                    default
+                Agents do not need to make this selection.
+              */}
             </div>
 
             {/* Panel footer */}

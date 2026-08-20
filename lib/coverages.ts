@@ -167,8 +167,23 @@ export const ENHANCED_COVERAGE_GROUPS: CoverageGroup[] = [
   },
 ];
 
+/**
+ * Optional Forms — NOT shown to the agent.
+ *
+ * Backend behavior for Great American quotes:
+ *   – "Locked Vehicle - Restricted Theft Coverage Endorsement" is always
+ *     silently included in the API call. No agent action required.
+ *   – "Existing Fire Exclusion" is never applied by default.
+ *   – "Crane Exclusion" is never applied by default.
+ *
+ * Kept here for reference / API mapping; do not render in the UI.
+ */
 export const OPTIONAL_FORMS = [
   "Existing Fire Exclusion",
   "Locked Vehicle - Restricted Theft Coverage Endorsement",
   "Crane Exclusion",
+];
+
+export const AUTO_INCLUDED_OPTIONAL_FORMS = [
+  "Locked Vehicle - Restricted Theft Coverage Endorsement",
 ];
