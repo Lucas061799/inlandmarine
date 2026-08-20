@@ -1,0 +1,20 @@
+node_modules
+.next
+out
+build
+.env*
+!.env.example
+.DS_Store
+*.log
+
+# Loose asset drops (source files provided by the user; the app uses the
+# copies in /public)
+/https_
+/08
+/logos.png
+/great\ american.png
+/navigators.png
+/transparantblogo.svg.svg
+
+# Vercel
+.vercel

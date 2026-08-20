@@ -1,0 +1,153 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html, body {
+  height: 100%;
+  background: #ffffff;
+  color: #3b3b3b;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
+/* Force form controls to inherit Montserrat (browsers use system font by default) */
+button,
+input,
+optgroup,
+select,
+textarea {
+  font-family: inherit;
+  font-feature-settings: inherit;
+}
+
+@layer components {
+  /* Floating label input – matches production styles from live app */
+  .field {
+    @apply relative;
+  }
+  .field > input,
+  .field > textarea,
+  .field > select {
+    @apply w-full rounded-[14px] border border-[#EAEAEA] bg-white text-[18px] text-[#212529]
+      focus:outline-none focus:border-btis-teal focus:ring-2 focus:ring-btis-teal/25;
+    padding: 0.85rem 1.1rem;
+    font-family: Montserrat, sans-serif;
+  }
+  .field > label {
+    @apply pointer-events-none absolute left-4 -top-2.5 bg-white px-1.5 text-[13px] font-medium tracking-normal text-[#6C757D];
+  }
+  .field > .field-hint {
+    @apply absolute right-3 -top-2.5 bg-white px-1.5 text-[13px] text-btis-teal;
+  }
+
+  /* Buttons — sampled from production DevTools */
+  .btn-next {
+    @apply inline-flex items-center justify-center text-white transition disabled:opacity-60;
+    font-size: 22px;
+    font-weight: 500;
+    padding: 8px 22px;
+    border-radius: 14px;
+    background-image: linear-gradient(180deg, #ADD797 0%, #73C9B7 100%);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+  }
+  .btn-next:hover {
+    background-image: linear-gradient(180deg, #9ecc86 0%, #5cbba6 100%);
+  }
+
+  .btn-back {
+    @apply inline-flex items-center justify-center bg-white text-[#212529] transition
+      hover:bg-[#F5F5F5];
+    font-size: 22px;
+    font-weight: 500;
+    padding: 8px 22px;
+    border-radius: 14px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+  }
+  .btn-save {
+    @apply inline-flex items-center justify-center rounded-[6px] px-8 py-2 text-[14px] font-medium text-white transition;
+    background-color: #615F9E;
+  }
+  .btn-save:hover { background-color: #4d4b7f; }
+  .btn-select {
+    @apply inline-flex items-center justify-center rounded-[6px] px-5 py-1.5 text-[12px] font-medium text-white transition;
+    background-color: #92CFA4;
+  }
+  .btn-select:hover { background-color: #73C9B7; }
+
+  .section-title {
+    @apply text-[16px] text-ink border-b border-ink-faint pb-3 mb-8;
+  }
+
+  .sidebar-link {
+    @apply block text-[14px] text-white/90 hover:text-white transition;
+  }
+  .sidebar-link.active {
+    @apply text-btis-navy font-semibold;
+  }
+
+  .radio-pill {
+    @apply inline-flex items-center gap-1.5 text-[12px] text-ink-soft;
+  }
+  .radio-pill input {
+    @apply accent-brand-500;
+  }
+}
+
+/* Custom radio – mint teal filled circle */
+input[type="radio"].brand-radio {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 1.5px solid #c9cdd4;
+  border-radius: 50%;
+  display: inline-block;
+  position: relative;
+  cursor: pointer;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+input[type="radio"].brand-radio:checked {
+  border-color: #73C9B7;
+}
+input[type="radio"].brand-radio:checked::after {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 3px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #73C9B7;
+}
+
+/* Custom checkbox – mint teal checkmark to match production */
+input[type="checkbox"].brand {
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border: 1.5px solid #c9cdd4;
+  border-radius: 6px;
+  display: inline-block;
+  position: relative;
+  cursor: pointer;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+input[type="checkbox"].brand:checked {
+  background: #73C9B7;
+  border-color: #73C9B7;
+}
+input[type="checkbox"].brand:checked::after {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: 2px;
+  width: 6px;
+  height: 12px;
+  border: solid white;
+  border-width: 0 2.5px 2.5px 0;
+  transform: rotate(45deg);
+}
