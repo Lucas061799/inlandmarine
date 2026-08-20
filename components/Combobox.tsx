@@ -55,7 +55,7 @@ export function Combobox({
   }, [open]);
 
   const pick = (v: string) => {
-    setValue(v);
+    setInternal(v);
     setQuery("");
     setOpen(false);
     onChange?.(v);
