@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { Combobox } from "@/components/Combobox";
 import { ChevronDown, ChevronRight, Check } from "lucide-react";
-import { ENHANCED_COVERAGE_GROUPS } from "@/lib/coverages";
+import { INCLUDED_COVERAGES, OPTIONAL_ADDONS } from "@/lib/coverages";
 import Link from "next/link";
 
 /* ---------- Carrier logos (use PNG assets) ---------- */
@@ -136,48 +136,101 @@ function QuoteCard({
   );
 }
 
-/* ---------- Coverage group accordion ---------- */
-function CoverageDropdown({
-  value,
-  options,
-  onChange,
+/* ---------- Accordion header ---------- */
+function AccordionHeader({
+  open,
+  title,
+  badge,
+  badgeTone = "muted",
+  onToggle,
 }: {
-  value: string;
-  options: string[];
-  onChange: (v: string) => void;
+  open: boolean;
+  title: string;
+  badge: string;
+  badgeTone?: "muted" | "brand";
+  onToggle: () => void;
 }) {
   return (
-    <Combobox
-      options={options}
-      value={value}
-      onChange={onChange}
-      searchable={false}
-    />
+    <button
+      type="button"
+      onClick={onToggle}
+      className="flex w-full items-center justify-between px-5 py-4 text-left"
+    >
+      <div className="flex items-center gap-3">
+        <span className="text-[17px] font-semibold text-btis-navy">{title}</span>
+        <span
+          className={`rounded-full px-2.5 py-0.5 text-[12px] font-medium ${
+            badgeTone === "brand"
+              ? "text-[#3f8c66]"
+              : "text-[#6C757D]"
+          }`}
+          style={{
+            backgroundColor:
+              badgeTone === "brand" ? "rgba(115, 201, 183, 0.16)" : "#F1F1F1",
+          }}
+        >
+          {badge}
+        </span>
+      </div>
+      {open ? (
+        <ChevronDown className="h-5 w-5 text-btis-navy" />
+      ) : (
+        <ChevronRight className="h-5 w-5 text-btis-navy" />
+      )}
+    </button>
+  );
+}
+
+/* ---------- Toggle switch ---------- */
+function Toggle({
+  checked,
+  onChange,
+  ariaLabel,
+}: {
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  ariaLabel: string;
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label={ariaLabel}
+      onClick={() => onChange(!checked)}
+      className="relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full transition-colors"
+      style={{ backgroundColor: checked ? "#73C9B7" : "#DCDCDC" }}
+    >
+      <span
+        className="inline-block h-6 w-6 rounded-full bg-white shadow-md transition"
+        style={{
+          transform: checked ? "translateX(21px)" : "translateX(2px)",
+          marginTop: "2px",
+        }}
+      />
+    </button>
   );
 }
 
 /* ---------- Main page ---------- */
 export default function ReviewPage() {
   const [selectedCarrier, setSelectedCarrier] = useState<"GA" | "NAV" | null>(null);
-  const [values, setValues] = useState<Record<string, string>>(() => {
-    const init: Record<string, string> = {};
-    ENHANCED_COVERAGE_GROUPS.forEach((g) => g.items.forEach((i) => (init[i.id] = i.defaultValue)));
-    return init;
-  });
-  const [initialValues] = useState(values);
-  const [expanded, setExpanded] = useState<Record<string, boolean>>({
-    equipment: false,
-    "rental-expenses": false,
-    "property-protection": false,
-    "additional-coverage": false,
-  });
+
+  // Optional add-on toggle state (all off by default)
+  const [addOns, setAddOns] = useState<Record<string, boolean>>(() =>
+    Object.fromEntries(OPTIONAL_ADDONS.map((a) => [a.id, false])),
+  );
+  const [initialAddOns] = useState(addOns);
+
+  const [includedOpen, setIncludedOpen] = useState(false);
+  const [addOnsOpen, setAddOnsOpen] = useState(true);
+
   const [reratedPremium, setReratedPremium] = useState<string | null>(null);
   const [rerating, setRerating] = useState(false);
 
   const dirty = useMemo(
-    () =>
-      Object.keys(values).some((k) => values[k] !== initialValues[k]),
-    [values, initialValues],
+    () => Object.keys(addOns).some((k) => addOns[k] !== initialAddOns[k]),
+    [addOns, initialAddOns],
   );
 
   const currentGAPrice = reratedPremium ?? "$1075";
@@ -187,15 +240,14 @@ export default function ReviewPage() {
   function handleReRate() {
     setRerating(true);
     setTimeout(() => {
-      // Fake re-rate: bump premium a bit based on # of edits
-      const delta = Object.keys(values).filter((k) => values[k] !== initialValues[k]).length * 18;
+      const delta = Object.values(addOns).filter(Boolean).length * 32;
       setReratedPremium("$" + (1075 + delta));
       setRerating(false);
     }, 800);
   }
 
   function reset() {
-    setValues(initialValues);
+    setAddOns(initialAddOns);
     setReratedPremium(null);
   }
 
@@ -230,10 +282,10 @@ export default function ReviewPage() {
             <div className="flex items-start justify-between gap-4 border-b border-[#EAEAEA] pb-5">
               <div>
                 <h2 className="text-[22px] font-semibold text-btis-navy">
-                  Great American Enhanced Coverages
+                  Add-On Coverages
                 </h2>
                 <p className="mt-1 text-[14px] text-[#6C757D]">
-                  Review and customize your coverage limits. Changes require re-rating.
+                  Customize your optional coverages.
                 </p>
               </div>
               {dirty && (
@@ -250,58 +302,78 @@ export default function ReviewPage() {
               )}
             </div>
 
-            {/* Coverage groups */}
             <div className="mt-6 space-y-4">
-              {ENHANCED_COVERAGE_GROUPS.map((g) => {
-                const isOpen = expanded[g.id];
-                return (
-                  <div key={g.id} className="rounded-xl border border-[#EAEAEA]">
-                    <button
-                      type="button"
-                      onClick={() => setExpanded((p) => ({ ...p, [g.id]: !p[g.id] }))}
-                      className="flex w-full items-center justify-between px-5 py-4 text-left"
-                    >
-                      <div className="flex items-center gap-2">
-                        {isOpen ? (
-                          <ChevronDown className="h-5 w-5 text-btis-navy" />
-                        ) : (
-                          <ChevronRight className="h-5 w-5 text-btis-navy" />
-                        )}
-                        <span className="text-[17px] font-semibold text-btis-navy">
-                          {g.title}
-                        </span>
-                      </div>
-                      <span className="text-[12px] text-[#6C757D]">
-                        {g.items.length} coverages
-                      </span>
-                    </button>
-
-                    {isOpen && (
-                      <div className="grid gap-6 border-t border-[#EAEAEA] px-5 py-6 sm:grid-cols-2">
-                        {g.items.map((it) => (
-                          <div key={it.id} className="flex flex-col">
-                            <div className="text-[14px] font-medium text-[#212529]">
-                              {it.label}
-                            </div>
-                            <div className="mt-1 min-h-[16px] text-[11px] italic text-[#6C757D]">
-                              {it.sublabel ?? " "}
-                            </div>
-                            <div className="mt-2 mt-auto pt-1">
-                              <CoverageDropdown
-                                value={values[it.id]}
-                                options={it.options}
-                                onChange={(v) =>
-                                  setValues((p) => ({ ...p, [it.id]: v }))
-                                }
-                              />
-                            </div>
+              {/* Included in your Enhanced Coverage */}
+              <div className="rounded-xl border border-[#EAEAEA]">
+                <AccordionHeader
+                  open={includedOpen}
+                  title="Included in your Enhanced Coverage"
+                  badge={`${INCLUDED_COVERAGES.length} included`}
+                  badgeTone="brand"
+                  onToggle={() => setIncludedOpen((v) => !v)}
+                />
+                {includedOpen && (
+                  <ul className="divide-y divide-[#EAEAEA] border-t border-[#EAEAEA]">
+                    {INCLUDED_COVERAGES.map((c) => (
+                      <li
+                        key={c.label}
+                        className="flex items-center justify-between px-5 py-4"
+                      >
+                        <div>
+                          <div className="text-[15px] font-medium text-[#212529]">
+                            {c.label}
                           </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+                          <div className="mt-0.5 text-[13px] text-[#6C757D]">
+                            {c.sublabel}
+                          </div>
+                        </div>
+                        <span
+                          className="rounded-full px-2.5 py-0.5 text-[12px] font-medium text-[#3f8c66]"
+                          style={{ backgroundColor: "rgba(115, 201, 183, 0.16)" }}
+                        >
+                          Included
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              {/* Optional Add-Ons */}
+              <div className="rounded-xl border border-[#EAEAEA]">
+                <AccordionHeader
+                  open={addOnsOpen}
+                  title="Optional Add-Ons"
+                  badge={`${OPTIONAL_ADDONS.length} available`}
+                  onToggle={() => setAddOnsOpen((v) => !v)}
+                />
+                {addOnsOpen && (
+                  <ul className="divide-y divide-[#EAEAEA] border-t border-[#EAEAEA]">
+                    {OPTIONAL_ADDONS.map((a) => (
+                      <li
+                        key={a.id}
+                        className="flex items-start justify-between gap-6 px-5 py-5"
+                      >
+                        <div className="min-w-0 pr-4">
+                          <div className="text-[15px] font-semibold text-[#212529]">
+                            {a.label}
+                          </div>
+                          <div className="mt-1 text-[13px] text-[#6C757D]">
+                            {a.description}
+                          </div>
+                        </div>
+                        <Toggle
+                          checked={addOns[a.id]}
+                          onChange={(v) =>
+                            setAddOns((p) => ({ ...p, [a.id]: v }))
+                          }
+                          ariaLabel={a.label}
+                        />
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
 
               {/*
                 Optional Forms (Existing Fire Exclusion, Locked Vehicle –
