@@ -11,7 +11,14 @@ const NAV: Item[] = [
   { label: "Coverage Options", href: "/coverage" },
   { label: "Underwriting Questions", href: "/underwriting" },
   { label: "Loss Payee", href: "/loss-payee" },
-  { label: "Review & Select Payment", href: "/review" },
+  {
+    label: "Review & Select Payment",
+    href: "/review",
+    children: [
+      { label: "Option 1", href: "/review" },
+      { label: "Option 2", href: "/review/option-2" },
+    ],
+  },
   { label: "Sign and Request to Bind", href: "/sign-bind" },
 ];
 
