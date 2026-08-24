@@ -4,15 +4,19 @@ import { QuoteInProgress } from "./QuoteInProgress";
 
 const RIGHT_COL_WIDTH = 375; // reserved space for logo + quote card column (355 card + gutter)
 const RIGHT_COL_GUTTER = 200; // extra breathing room on the right of the form
+const RIGHT_COL_GUTTER_WIDE = 48; // for content that needs the width (e.g. side-by-side quote cards)
 
 export function AppShell({
   title: _title,
   children,
   progress = 25,
+  wide = false,
 }: {
   title?: string;
   children: React.ReactNode;
   progress?: number;
+  /** Reclaim most of the right-hand gutter — the fixed rail is only 375px wide. */
+  wide?: boolean;
 }) {
   return (
     <div className="relative min-h-screen w-full bg-white">
@@ -33,7 +37,9 @@ export function AppShell({
           className="relative flex min-w-0 flex-1 flex-col pb-12 pt-24"
           style={{
             paddingLeft: "108px",
-            paddingRight: `${RIGHT_COL_WIDTH + RIGHT_COL_GUTTER}px`,
+            paddingRight: `${
+              RIGHT_COL_WIDTH + (wide ? RIGHT_COL_GUTTER_WIDE : RIGHT_COL_GUTTER)
+            }px`,
           }}
         >
           <div className="flex-1">{children}</div>

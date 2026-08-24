@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { Combobox } from "@/components/Combobox";
 import { ChevronDown, ChevronRight, Check } from "lucide-react";
-import { INCLUDED_COVERAGES, OPTIONAL_ADDONS } from "@/lib/coverages";
+import { ENHANCED_COVERAGE_GROUPS } from "@/lib/coverages";
 import Link from "next/link";
 
 /* ---------- Carrier logos (use PNG assets) ---------- */
@@ -69,10 +69,9 @@ function QuoteCard({
 }) {
   return (
     <div
-      className={`relative flex flex-col rounded-2xl bg-white p-8 shadow-card ring-1 transition ${
+      className={`relative flex min-w-0 flex-col rounded-2xl bg-white p-8 shadow-card ring-1 transition ${
         selected ? "ring-2 ring-[#73C9B7]" : "ring-black/5"
       }`}
-      style={{ minWidth: "300px" }}
     >
       {badge && (
         <div
@@ -96,8 +95,8 @@ function QuoteCard({
         15% Commission
       </div>
 
-      <div className="mt-3 flex items-end justify-between">
-        <div className="leading-none">
+      <div className="mt-3 flex items-end justify-between gap-4">
+        <div className="min-w-0 leading-none">
           <span className="text-[36px] font-bold text-btis-navy">{price}</span>
           <div className="mt-1 text-[13px] text-[#6C757D]">annually</div>
           {updated && (
@@ -109,7 +108,7 @@ function QuoteCard({
         <button
           type="button"
           onClick={onSelect}
-          className={`inline-flex items-center gap-1.5 rounded-full px-5 py-2 text-[14px] font-medium transition ${
+          className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-5 py-2 text-[14px] font-medium transition ${
             selected ? "bg-[#EAF6F2] text-[#3f8c66]" : "text-white"
           }`}
           style={
@@ -118,7 +117,7 @@ function QuoteCard({
               : { backgroundImage: "linear-gradient(180deg, #ADD797 0%, #73C9B7 100%)" }
           }
         >
-          {selected && <Check className="h-4 w-4" strokeWidth={3} />}
+          {selected && <Check className="h-4 w-4 shrink-0" strokeWidth={3} />}
           {cta}
         </button>
       </div>
@@ -141,13 +140,11 @@ function AccordionHeader({
   open,
   title,
   badge,
-  badgeTone = "muted",
   onToggle,
 }: {
   open: boolean;
   title: string;
   badge: string;
-  badgeTone?: "muted" | "brand";
   onToggle: () => void;
 }) {
   return (
@@ -159,15 +156,8 @@ function AccordionHeader({
       <div className="flex items-center gap-3">
         <span className="text-[17px] font-semibold text-btis-navy">{title}</span>
         <span
-          className={`rounded-full px-2.5 py-0.5 text-[12px] font-medium ${
-            badgeTone === "brand"
-              ? "text-[#3f8c66]"
-              : "text-[#6C757D]"
-          }`}
-          style={{
-            backgroundColor:
-              badgeTone === "brand" ? "rgba(115, 201, 183, 0.16)" : "#F1F1F1",
-          }}
+          className="rounded-full px-2.5 py-0.5 text-[12px] font-medium text-[#3f8c66]"
+          style={{ backgroundColor: "rgba(115, 201, 183, 0.16)" }}
         >
           {badge}
         </span>
@@ -181,34 +171,23 @@ function AccordionHeader({
   );
 }
 
-/* ---------- Toggle switch ---------- */
-function Toggle({
-  checked,
+/* ---------- Coverage limit dropdown ---------- */
+function CoverageDropdown({
+  value,
+  options,
   onChange,
-  ariaLabel,
 }: {
-  checked: boolean;
-  onChange: (v: boolean) => void;
-  ariaLabel: string;
+  value: string;
+  options: string[];
+  onChange: (v: string) => void;
 }) {
   return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={checked}
-      aria-label={ariaLabel}
-      onClick={() => onChange(!checked)}
-      className="relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full transition-colors"
-      style={{ backgroundColor: checked ? "#73C9B7" : "#DCDCDC" }}
-    >
-      <span
-        className="inline-block h-6 w-6 rounded-full bg-white shadow-md transition"
-        style={{
-          transform: checked ? "translateX(21px)" : "translateX(2px)",
-          marginTop: "2px",
-        }}
-      />
-    </button>
+    <Combobox
+      options={options}
+      value={value}
+      onChange={onChange}
+      searchable={false}
+    />
   );
 }
 
@@ -216,53 +195,69 @@ function Toggle({
 export default function ReviewPage() {
   const [selectedCarrier, setSelectedCarrier] = useState<"GA" | "NAV" | null>(null);
 
-  // Optional add-on toggle state (all off by default)
-  const [addOns, setAddOns] = useState<Record<string, boolean>>(() =>
-    Object.fromEntries(OPTIONAL_ADDONS.map((a) => [a.id, false])),
-  );
-  const [initialAddOns] = useState(addOns);
+  // Selected limit for every enhanced coverage, seeded from the real defaults
+  const [values, setValues] = useState<Record<string, string>>(() => {
+    const init: Record<string, string> = {};
+    ENHANCED_COVERAGE_GROUPS.forEach((g) =>
+      g.items.forEach((i) => (init[i.id] = i.defaultValue)),
+    );
+    return init;
+  });
+  const [initialValues] = useState(values);
 
-  const [includedOpen, setIncludedOpen] = useState(false);
-  const [addOnsOpen, setAddOnsOpen] = useState(true);
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({
+    equipment: false,
+    "rental-expenses": false,
+    "property-protection": false,
+    "additional-coverage": false,
+  });
 
   const [reratedPremium, setReratedPremium] = useState<string | null>(null);
   const [rerating, setRerating] = useState(false);
 
   const dirty = useMemo(
-    () => Object.keys(addOns).some((k) => addOns[k] !== initialAddOns[k]),
-    [addOns, initialAddOns],
+    () => Object.keys(values).some((k) => values[k] !== initialValues[k]),
+    [values, initialValues],
   );
 
-  const currentGAPrice = reratedPremium ?? "$1075";
   const gaSelected = selectedCarrier === "GA";
   const navSelected = selectedCarrier === "NAV";
+
+  // The re-rated premium only describes the enhanced-coverage customization,
+  // so it is shown while Great American is the selected quote. Deselecting
+  // falls back to the base quote without discarding the agent's limit edits —
+  // re-selecting brings the customized premium back.
+  const showRerate = gaSelected && !!reratedPremium;
+  const currentGAPrice = showRerate ? reratedPremium! : "$1075";
 
   function handleReRate() {
     setRerating(true);
     setTimeout(() => {
-      const delta = Object.values(addOns).filter(Boolean).length * 32;
+      // Fake re-rate: bump premium a bit based on # of edits
+      const delta =
+        Object.keys(values).filter((k) => values[k] !== initialValues[k]).length * 18;
       setReratedPremium("$" + (1075 + delta));
       setRerating(false);
     }, 800);
   }
 
   function reset() {
-    setAddOns(initialAddOns);
+    setValues(initialValues);
     setReratedPremium(null);
   }
 
   return (
-    <AppShell>
+    <AppShell wide>
       <div className="grid gap-8">
         {/* Cards */}
-        <div className="grid gap-8 sm:grid-cols-2">
+        <div className="grid gap-8 [grid-template-columns:repeat(auto-fit,minmax(400px,1fr))]">
           <QuoteCard
             logo={<GreatAmericanLogo />}
             price={currentGAPrice}
             bullets={["Broader coverage options", "Admitted", "Agency Bill"]}
             badge="Enhanced Coverage"
             selected={gaSelected}
-            updated={!!reratedPremium}
+            updated={showRerate}
             onSelect={() => setSelectedCarrier(gaSelected ? null : "GA")}
             cta={gaSelected ? "Selected" : "Select & Review Coverage"}
           />
@@ -280,14 +275,9 @@ export default function ReviewPage() {
         {gaSelected && (
           <section className="rounded-2xl bg-white p-8 shadow-card ring-1 ring-black/5">
             <div className="flex items-start justify-between gap-4 border-b border-[#EAEAEA] pb-5">
-              <div>
-                <h2 className="text-[22px] font-semibold text-btis-navy">
-                  Add-On Coverages
-                </h2>
-                <p className="mt-1 text-[14px] text-[#6C757D]">
-                  Customize your optional coverages.
-                </p>
-              </div>
+              <h2 className="text-[22px] font-semibold text-btis-navy">
+                Great American Enhanced Coverages
+              </h2>
               {dirty && (
                 <span
                   className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-[13px] font-medium text-[#8a5a1f]"
@@ -302,78 +292,50 @@ export default function ReviewPage() {
               )}
             </div>
 
-            <div className="mt-6 space-y-4">
-              {/* Included in your Enhanced Coverage */}
-              <div className="rounded-xl border border-[#EAEAEA]">
-                <AccordionHeader
-                  open={includedOpen}
-                  title="Included in your Enhanced Coverage"
-                  badge={`${INCLUDED_COVERAGES.length} included`}
-                  badgeTone="brand"
-                  onToggle={() => setIncludedOpen((v) => !v)}
-                />
-                {includedOpen && (
-                  <ul className="divide-y divide-[#EAEAEA] border-t border-[#EAEAEA]">
-                    {INCLUDED_COVERAGES.map((c) => (
-                      <li
-                        key={c.label}
-                        className="flex items-center justify-between px-5 py-4"
-                      >
-                        <div>
-                          <div className="text-[15px] font-medium text-[#212529]">
-                            {c.label}
-                          </div>
-                          <div className="mt-0.5 text-[13px] text-[#6C757D]">
-                            {c.sublabel}
-                          </div>
-                        </div>
-                        <span
-                          className="rounded-full px-2.5 py-0.5 text-[12px] font-medium text-[#3f8c66]"
-                          style={{ backgroundColor: "rgba(115, 201, 183, 0.16)" }}
-                        >
-                          Included
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
+            <p className="mt-5 text-[14px] text-[#6C757D]">
+              Review and customize your coverage limits. Changes require re-rating.
+            </p>
 
-              {/* Optional Add-Ons */}
-              <div className="rounded-xl border border-[#EAEAEA]">
-                <AccordionHeader
-                  open={addOnsOpen}
-                  title="Optional Add-Ons"
-                  badge={`${OPTIONAL_ADDONS.length} available`}
-                  onToggle={() => setAddOnsOpen((v) => !v)}
-                />
-                {addOnsOpen && (
-                  <ul className="divide-y divide-[#EAEAEA] border-t border-[#EAEAEA]">
-                    {OPTIONAL_ADDONS.map((a) => (
-                      <li
-                        key={a.id}
-                        className="flex items-start justify-between gap-6 px-5 py-5"
-                      >
-                        <div className="min-w-0 pr-4">
-                          <div className="text-[15px] font-semibold text-[#212529]">
-                            {a.label}
+            {/* Coverage groups */}
+            <div className="mt-5 space-y-4">
+              {ENHANCED_COVERAGE_GROUPS.map((g) => {
+                const isOpen = expanded[g.id];
+                return (
+                  <div key={g.id} className="rounded-xl border border-[#EAEAEA]">
+                    <AccordionHeader
+                      open={isOpen}
+                      title={g.title}
+                      badge={`${g.items.length} included`}
+                      onToggle={() =>
+                        setExpanded((prev) => ({ ...prev, [g.id]: !prev[g.id] }))
+                      }
+                    />
+                    {isOpen && (
+                      <div className="grid gap-6 border-t border-[#EAEAEA] px-5 py-6 sm:grid-cols-2">
+                        {g.items.map((it) => (
+                          <div key={it.id} className="flex flex-col">
+                            <div className="text-[14px] font-medium text-[#212529]">
+                              {it.label}
+                            </div>
+                            <div className="mt-1 min-h-[16px] text-[11px] italic text-[#6C757D]">
+                              {it.sublabel ?? " "}
+                            </div>
+                            <div className="mt-auto pt-2">
+                              <CoverageDropdown
+                                value={values[it.id]}
+                                options={it.options}
+                                onChange={(v) =>
+                                  setValues((prev) => ({ ...prev, [it.id]: v }))
+                                }
+                              />
+                            </div>
                           </div>
-                          <div className="mt-1 text-[13px] text-[#6C757D]">
-                            {a.description}
-                          </div>
-                        </div>
-                        <Toggle
-                          checked={addOns[a.id]}
-                          onChange={(v) =>
-                            setAddOns((p) => ({ ...p, [a.id]: v }))
-                          }
-                          ariaLabel={a.label}
-                        />
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
 
               {/*
                 Optional Forms (Existing Fire Exclusion, Locked Vehicle –
@@ -388,7 +350,7 @@ export default function ReviewPage() {
             </div>
 
             {/* Panel footer */}
-            <div className="mt-8 flex items-center justify-between">
+            <div className="mt-8 flex items-center justify-between border-t border-[#EAEAEA] pt-6">
               <button
                 type="button"
                 onClick={reset}
@@ -398,7 +360,7 @@ export default function ReviewPage() {
                   fontSize: "17px",
                   fontWeight: 500,
                   padding: "8px 20px",
-                  boxShadow: "0 4px 14px rgba(0, 0, 0, 0.08)",
+                  boxShadow: "0 5px 20px rgba(0, 0, 0, 0.1)",
                 }}
               >
                 Discard changes
@@ -414,7 +376,7 @@ export default function ReviewPage() {
                   fontWeight: 500,
                   padding: "8px 20px",
                   backgroundImage: "linear-gradient(180deg, #ADD797 0%, #73C9B7 100%)",
-                  boxShadow: "0 4px 14px rgba(0, 0, 0, 0.08)",
+                  boxShadow: "0 5px 20px rgba(0, 0, 0, 0.1)",
                 }}
               >
                 {rerating ? "Updating…" : "Update & Re-rate"}

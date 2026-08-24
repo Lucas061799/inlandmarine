@@ -18,3 +18,6 @@ build
 
 # Vercel
 .vercel
+
+# TypeScript incremental build cache
+*.tsbuildinfo
