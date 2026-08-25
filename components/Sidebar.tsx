@@ -17,6 +17,8 @@ const NAV: Item[] = [
     children: [
       { label: "Option 1", href: "/review" },
       { label: "Option 2", href: "/review/option-2" },
+      { label: "Option 3", href: "/review/option-3" },
+      { label: "Option 4", href: "/review/option-4" },
     ],
   },
   { label: "Sign and Request to Bind", href: "/sign-bind" },

@@ -1,50 +1,11 @@
 "use client";
 import { useState } from "react";
 import { AppShell } from "@/components/AppShell";
-import { ChevronDown, Check } from "lucide-react";
+import { GreatAmericanLogo, NavigatorsLogo } from "@/components/CarrierLogos";
+import { PolicyFields } from "@/components/PolicyField";
+import { Check } from "lucide-react";
 import { EnhancedCoverages } from "@/components/EnhancedCoverages";
 import Link from "next/link";
-
-/* ---------- Carrier logos (use PNG assets) ---------- */
-function GreatAmericanLogo() {
-  return (
-    <img
-      src="/great-american.png"
-      alt="Great American Insurance Group"
-      width={220}
-      height={107}
-      className="h-auto w-48 select-none"
-    />
-  );
-}
-function NavigatorsLogo() {
-  return (
-    <img
-      src="/rivet.png"
-      alt="Rivet by Navigators"
-      width={474}
-      height={181}
-      className="h-auto w-48 select-none"
-    />
-  );
-}
-
-/* ---------- Simple styled dropdown (visual only) ---------- */
-function LimitDropdown({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="field relative">
-      <label>{label}</label>
-      <button
-        type="button"
-        className="flex w-full items-center justify-between rounded-[14px] border border-[#EAEAEA] bg-white text-left text-[18px] text-[#212529]"
-        style={{ padding: "0.85rem 1.1rem", fontFamily: "Montserrat, sans-serif" }}
-      >
-        <span>{value}</span>
-        <ChevronDown className="h-4 w-4 text-ink-soft" />
-      </button>
-    </div>
-  );
-}
 
 /* ---------- Quote card ---------- */
 function QuoteCard({
@@ -84,8 +45,7 @@ function QuoteCard({
       <div className="mb-8 flex h-24 items-end justify-center">{logo}</div>
 
       <div className="grid gap-5">
-        <LimitDropdown label="Limits" value="$1M/$2M/$2M" />
-        <LimitDropdown label="Deductible" value="$1,500" />
+        <PolicyFields />
       </div>
 
       <div className="mt-6 text-[16px] font-medium text-[#212529]">
