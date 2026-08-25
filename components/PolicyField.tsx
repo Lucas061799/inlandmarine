@@ -11,14 +11,18 @@ export function PolicyField({
   label,
   value,
   size = "lg",
+  widthClass = "w-[170px]",
 }: {
   label: string;
   value: string;
   size?: "lg" | "sm";
+  /** Only applies at "sm" — inline fields size to their content so the rest
+      of the row keeps its space. "lg" fills its grid column. */
+  widthClass?: string;
 }) {
   const small = size === "sm";
   return (
-    <div className={`field relative ${small ? "min-w-[150px] flex-1" : ""}`}>
+    <div className={`field relative ${small ? widthClass : ""}`}>
       <label>{label}</label>
       <button
         type="button"
@@ -43,8 +47,18 @@ export function PolicyField({
 export function PolicyFields({ size = "lg" }: { size?: "lg" | "sm" }) {
   return (
     <>
-      <PolicyField label="Limits" value="$1M/$2M/$2M" size={size} />
-      <PolicyField label="Deductible" value="$1,500" size={size} />
+      <PolicyField
+        label="Limits"
+        value="$1M/$2M/$2M"
+        size={size}
+        widthClass="w-[170px]"
+      />
+      <PolicyField
+        label="Deductible"
+        value="$1,500"
+        size={size}
+        widthClass="w-[110px]"
+      />
     </>
   );
 }

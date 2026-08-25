@@ -5,6 +5,7 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { EnhancedCoverages } from "@/components/EnhancedCoverages";
 import { PolicyFields } from "@/components/PolicyField";
+import { CoverageBadge } from "@/components/CoverageBadge";
 import { CARRIER_QUOTES, type CarrierQuote } from "@/lib/quotes";
 
 /* ---------- Radio ----------
@@ -51,12 +52,15 @@ function CarrierRow({
 
         <div className="flex min-w-0 flex-1 items-start justify-between gap-6">
           <div className="min-w-0">
-            <div
-              className={`text-[20px] text-btis-navy ${
-                selected ? "font-semibold" : "font-medium"
-              }`}
-            >
-              {quote.name}
+            <div className="flex flex-wrap items-center gap-2">
+              <span
+                className={`text-[20px] text-btis-navy ${
+                  selected ? "font-semibold" : "font-medium"
+                }`}
+              >
+                {quote.name}
+              </span>
+              {quote.badge && <CoverageBadge label={quote.badge} />}
             </div>
             <div className="mt-1 text-[13px] text-[#6C757D]">{meta}</div>
           </div>
@@ -90,14 +94,9 @@ export default function ReviewOptionFourPage() {
     q.id === "GA" && gaRerated !== null ? gaRerated : q.premium;
 
   const sorted = [...CARRIER_QUOTES].sort((a, b) => premiumOf(a) - premiumOf(b));
-  const lowestId = sorted[0].id;
   const selectedQuote = CARRIER_QUOTES.find((q) => q.id === selected);
 
-  // Sorted by premium already, so "lowest" only needs a word, not a badge.
-  const metaFor = (q: CarrierQuote) =>
-    [q.id === lowestId ? "Lowest premium" : null, ...q.bullets]
-      .filter(Boolean)
-      .join(" · ");
+  const metaFor = (q: CarrierQuote) => q.bullets.join(" · ");
 
   return (
     <AppShell wide>

@@ -5,31 +5,10 @@ import { ChevronDown, ChevronRight, Check } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { EnhancedCoverages } from "@/components/EnhancedCoverages";
 import { PolicyFields } from "@/components/PolicyField";
+import { CoverageBadge } from "@/components/CoverageBadge";
 import { CARRIER_QUOTES, type CarrierQuote } from "@/lib/quotes";
 
 const MINT_GRADIENT = "linear-gradient(180deg, #ADD797 0%, #73C9B7 100%)";
-
-/* ---------- Badge ---------- */
-function Badge({ label, tone }: { label: string; tone: "mint" | "yellow" }) {
-  if (tone === "yellow") {
-    return (
-      <span
-        className="rounded-full px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-btis-navy"
-        style={{ backgroundColor: "rgb(249, 228, 123)" }}
-      >
-        {label}
-      </span>
-    );
-  }
-  return (
-    <span
-      className="rounded-full px-2.5 py-0.5 text-[12px] font-semibold text-white"
-      style={{ backgroundImage: MINT_GRADIENT }}
-    >
-      {label}
-    </span>
-  );
-}
 
 /* ---------- Carrier row ----------
    Everything the agent needs for one quote runs across the full width —
@@ -38,7 +17,6 @@ function Badge({ label, tone }: { label: string; tone: "mint" | "yellow" }) {
 function CarrierRow({
   quote,
   premium,
-  lowest,
   selected,
   open,
   onToggle,
@@ -47,7 +25,6 @@ function CarrierRow({
 }: {
   quote: CarrierQuote;
   premium: number;
-  lowest: boolean;
   selected: boolean;
   open: boolean;
   onToggle: () => void;
@@ -70,15 +47,10 @@ function CarrierRow({
         className="flex w-full items-center justify-between gap-4 px-6 pt-5 text-left"
       >
         <div className="flex min-w-0 items-center gap-3">
-          <span
-            className="h-2 w-2 shrink-0 rounded-full"
-            style={{ backgroundColor: "#73C9B7" }}
-          />
           <span className="text-[18px] font-semibold text-btis-navy">
             {quote.name}
           </span>
-          {lowest && <Badge label="Lowest Premium" tone="mint" />}
-          {quote.badge && <Badge label={quote.badge} tone="yellow" />}
+          {quote.badge && <CoverageBadge label={quote.badge} />}
         </div>
         <div className="flex shrink-0 items-center gap-2 text-[13px] text-[#6C757D]">
           {open ? "Hide coverages" : "View coverages"}
@@ -90,40 +62,40 @@ function CarrierRow({
         </div>
       </button>
 
-      {/* Controls, laid out across the width */}
-      <div className="flex flex-wrap items-end gap-x-6 gap-y-4 px-6 pb-5 pt-4">
-        <PolicyFields size="sm" />
-
-        <div className="shrink-0">
-          <div className="text-[12px] text-[#6C757D]">Commission</div>
-          <div className="mt-1 text-[16px] font-medium text-[#212529]">
-            {quote.commission.replace(" Commission", "")}
-          </div>
+      {/* Two zones: what the agent can change on the left, what it costs and
+          the action it leads to on the right. */}
+      <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-4 px-6 pb-5 pt-4">
+        <div className="flex flex-wrap items-end gap-x-4 gap-y-4">
+          <PolicyFields size="sm" />
         </div>
 
-        <div className="shrink-0 leading-none">
-          <div className="text-[12px] text-[#6C757D]">Annual premium</div>
-          <div className="mt-1">
-            <span className="text-[28px] font-bold text-btis-navy">
-              ${premium.toLocaleString()}
-            </span>
-            <span className="ml-1 text-[14px] text-[#6C757D]">/yr</span>
+        <div className="ml-auto flex items-end gap-6">
+          <div className="text-right leading-none">
+            <div>
+              <span className="text-[28px] font-bold text-btis-navy">
+                ${premium.toLocaleString()}
+              </span>
+              <span className="ml-1 text-[14px] text-[#6C757D]">/yr</span>
+            </div>
+            <div className="mt-1.5 text-[13px] text-[#6C757D]">
+              {quote.commission}
+            </div>
           </div>
-        </div>
 
-        <button
-          type="button"
-          onClick={onSelect}
-          className={`ml-auto inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-5 py-2.5 text-[14px] font-medium transition ${
-            selected
-              ? "text-white"
-              : "border border-[#73C9B7] bg-white text-[#3f8c66] hover:bg-[#EAF6F2]"
-          }`}
-          style={selected ? { backgroundImage: MINT_GRADIENT } : undefined}
-        >
-          {selected && <Check className="h-4 w-4 shrink-0" strokeWidth={3} />}
-          {selected ? "Selected" : "Select"}
-        </button>
+          <button
+            type="button"
+            onClick={onSelect}
+            className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-5 py-2.5 text-[14px] font-medium transition ${
+              selected
+                ? "text-white"
+                : "border border-[#73C9B7] bg-white text-[#3f8c66] hover:bg-[#EAF6F2]"
+            }`}
+            style={selected ? { backgroundImage: MINT_GRADIENT } : undefined}
+          >
+            {selected && <Check className="h-4 w-4 shrink-0" strokeWidth={3} />}
+            {selected ? "Selected" : "Select"}
+          </button>
+        </div>
       </div>
 
       {open && (
@@ -153,7 +125,6 @@ export default function ReviewOptionThreePage() {
     q.id === "GA" && gaRerated !== null ? gaRerated : q.premium;
 
   const sorted = [...CARRIER_QUOTES].sort((a, b) => premiumOf(a) - premiumOf(b));
-  const lowestId = sorted[0].id;
   const selectedQuote = CARRIER_QUOTES.find((q) => q.id === selected);
 
   return (
@@ -175,7 +146,6 @@ export default function ReviewOptionThreePage() {
               key={q.id}
               quote={q}
               premium={premiumOf(q)}
-              lowest={q.id === lowestId}
               selected={selected === q.id}
               open={openRow === q.id}
               onToggle={() => setOpenRow((prev) => (prev === q.id ? null : q.id))}
@@ -197,7 +167,6 @@ export default function ReviewOptionThreePage() {
                       <EnhancedCoverages
                         heading={null}
                         subtitle={null}
-                        variant="tabs"
                         basePremium={q.premium}
                         onRerate={setGaRerated}
                         onDiscard={() => setGaRerated(null)}

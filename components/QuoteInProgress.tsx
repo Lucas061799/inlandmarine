@@ -1,7 +1,7 @@
 /* Carrier logos are cropped out of the original composite so each one can be
    sized independently (public/quote-progress.png is kept as the source). */
 const LOGOS = [
-  { src: "/levanta.png", alt: "levanta", width: 150 },
+  { src: "/levanta.png", alt: "levanta by Access", width: 160 },
   { src: "/rivet.png", alt: "Rivet by Navigators", width: 140 },
   { src: "/great-american.png", alt: "Great American Insurance Group", width: 172 },
 ];

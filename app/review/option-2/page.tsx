@@ -6,38 +6,15 @@ import { AppShell } from "@/components/AppShell";
 import { EnhancedCoverages } from "@/components/EnhancedCoverages";
 import { CarrierLogo } from "@/components/CarrierLogos";
 import { PolicyFields } from "@/components/PolicyField";
+import { CoverageBadge } from "@/components/CoverageBadge";
 import { CARRIER_QUOTES, type CarrierQuote } from "@/lib/quotes";
 
 const MINT_GRADIENT = "linear-gradient(180deg, #ADD797 0%, #73C9B7 100%)";
-
-/* ---------- Badge ---------- */
-function Badge({ label, tone }: { label: string; tone: "mint" | "yellow" }) {
-  if (tone === "yellow") {
-    // Matches the "Enhanced Coverage" flag on the card layout.
-    return (
-      <span
-        className="rounded-full px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-btis-navy"
-        style={{ backgroundColor: "rgb(249, 228, 123)" }}
-      >
-        {label}
-      </span>
-    );
-  }
-  return (
-    <span
-      className="rounded-full px-2.5 py-0.5 text-[12px] font-semibold text-white"
-      style={{ backgroundImage: MINT_GRADIENT }}
-    >
-      {label}
-    </span>
-  );
-}
 
 /* ---------- Carrier row ---------- */
 function CarrierRow({
   quote,
   premium,
-  lowest,
   selected,
   open,
   onToggle,
@@ -46,7 +23,6 @@ function CarrierRow({
 }: {
   quote: CarrierQuote;
   premium: number;
-  lowest: boolean;
   selected: boolean;
   open: boolean;
   onToggle: () => void;
@@ -70,15 +46,10 @@ function CarrierRow({
         className="flex w-full items-center justify-between gap-4 px-6 pt-5 text-left"
       >
         <div className="flex min-w-0 items-center gap-3">
-          <span
-            className="h-2 w-2 shrink-0 rounded-full"
-            style={{ backgroundColor: "#73C9B7" }}
-          />
           <span className="text-[18px] font-semibold text-btis-navy">
             {quote.name}
           </span>
-          {lowest && <Badge label="Lowest Premium" tone="mint" />}
-          {quote.badge && <Badge label={quote.badge} tone="yellow" />}
+          {quote.badge && <CoverageBadge label={quote.badge} />}
         </div>
         {open ? (
           <ChevronDown className="h-5 w-5 shrink-0 text-btis-navy" />
@@ -152,7 +123,6 @@ export default function ReviewOptionTwoPage() {
     q.id === "GA" && gaRerated !== null ? gaRerated : q.premium;
 
   const sorted = [...CARRIER_QUOTES].sort((a, b) => premiumOf(a) - premiumOf(b));
-  const lowestId = sorted[0].id;
   const selectedQuote = CARRIER_QUOTES.find((q) => q.id === selected);
 
   return (
@@ -174,7 +144,6 @@ export default function ReviewOptionTwoPage() {
               key={q.id}
               quote={q}
               premium={premiumOf(q)}
-              lowest={q.id === lowestId}
               selected={selected === q.id}
               open={openRow === q.id}
               onToggle={() => setOpenRow((prev) => (prev === q.id ? null : q.id))}
@@ -201,9 +170,11 @@ export default function ReviewOptionTwoPage() {
           back
         </Link>
 
+        {/* Plain "Continue" here on purpose — the other options name the
+            carrier, so the two treatments can be compared side by side. */}
         {selectedQuote && (
           <Link href="/sign-bind" className="btn-next">
-            Continue with {selectedQuote.name}
+            Continue
           </Link>
         )}
       </div>
