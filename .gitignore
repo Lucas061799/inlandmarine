@@ -21,4 +21,4 @@ build
 
 # TypeScript incremental build cache
 *.tsbuildinfo
-/levanta-access-logo_01.png
+/levanta-access-logo_01*.png

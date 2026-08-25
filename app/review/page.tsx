@@ -17,7 +17,6 @@ function QuoteCard({
   updated,
   onSelect,
   cta,
-  className = "",
 }: {
   logo: React.ReactNode;
   price: string;
@@ -27,13 +26,12 @@ function QuoteCard({
   updated?: boolean;
   onSelect: () => void;
   cta: string;
-  className?: string;
 }) {
   return (
     <div
       className={`relative flex min-w-0 flex-col rounded-2xl bg-white p-8 shadow-card ring-1 transition ${
         selected ? "ring-2 ring-[#73C9B7]" : "ring-black/5"
-      } ${className}`}
+      }`}
     >
       {badge && (
         <div
@@ -54,7 +52,7 @@ function QuoteCard({
         15% Commission
       </div>
 
-      <div className="mt-3 flex items-end justify-between gap-4">
+      <div className="mt-3 flex flex-wrap items-end justify-between gap-x-4 gap-y-3">
         <div className="min-w-0 leading-none">
           <span className="text-[36px] font-bold text-btis-navy">{price}</span>
           <div className="mt-1 text-[13px] text-[#6C757D]">annually</div>
@@ -112,29 +110,35 @@ export default function ReviewPage() {
 
   return (
     <AppShell wide>
-      {/*
-        One grid for all three blocks. Stacked, the DOM order puts the
-        enhanced panel directly under Great American instead of behind the
-        Navigators card. Once there is room for two columns the carriers sit
-        side by side and the panel spans the full width beneath them.
-        1728px is where the content column clears 2 x 400px + the gap.
-      */}
-      <div className="grid gap-8 min-[1728px]:grid-cols-2">
-        <QuoteCard
-          className="min-[1728px]:col-start-1 min-[1728px]:row-start-1"
-          logo={<GreatAmericanLogo />}
-          price={currentGAPrice}
-          bullets={["Broader coverage options", "Admitted", "Agency Bill"]}
-          badge="Enhanced Coverage"
-          selected={gaSelected}
-          updated={showRerate}
-          onSelect={() => setSelectedCarrier(gaSelected ? null : "GA")}
-          cta={gaSelected ? "Selected" : "Select & Review Coverage"}
-        />
+      <div className="grid gap-8">
+        {/* Cards */}
+        {/* auto-fit counts columns from each track's MAX, so the tracks stay 1fr
+            and the cap lives on the grid instead — otherwise a definite max
+            pins the layout to a single stretched column. */}
+        <div className="mx-auto grid w-full min-w-0 max-w-[1152px] gap-8 [grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr))]">
+          <QuoteCard
+            logo={<GreatAmericanLogo />}
+            price={currentGAPrice}
+            bullets={["Broader coverage options", "Admitted", "Agency Bill"]}
+            badge="Enhanced Coverage"
+            selected={gaSelected}
+            updated={showRerate}
+            onSelect={() => setSelectedCarrier(gaSelected ? null : "GA")}
+            cta={gaSelected ? "Selected" : "Select & Review Coverage"}
+          />
+          <QuoteCard
+            logo={<NavigatorsLogo />}
+            price="$675"
+            bullets={["BTIS Proprietary Carrier", "Admitted", "Agency Bill"]}
+            selected={navSelected}
+            onSelect={() => setSelectedCarrier(navSelected ? null : "NAV")}
+            cta={navSelected ? "Selected" : "Select"}
+          />
+        </div>
 
-        {/* Same mint ring as the selected card it belongs to. */}
+        {/* Enhanced Coverages panel (only when GA selected) */}
         {gaSelected && (
-          <section className="rounded-2xl bg-white p-8 shadow-card ring-2 ring-[#73C9B7] min-[1728px]:col-span-2 min-[1728px]:row-start-2">
+          <section className="rounded-2xl bg-white p-8 shadow-card ring-1 ring-black/5">
             <EnhancedCoverages
               onRerate={(p) => setReratedPremium("$" + p)}
               onDiscard={() => setReratedPremium(null)}
@@ -142,15 +146,6 @@ export default function ReviewPage() {
           </section>
         )}
 
-        <QuoteCard
-          className="min-[1728px]:col-start-2 min-[1728px]:row-start-1"
-          logo={<NavigatorsLogo />}
-          price="$675"
-          bullets={["BTIS Proprietary Carrier", "Admitted", "Agency Bill"]}
-          selected={navSelected}
-          onSelect={() => setSelectedCarrier(navSelected ? null : "NAV")}
-          cta={navSelected ? "Selected" : "Select"}
-        />
       </div>
 
       <div className="mt-10 flex items-center justify-between">
