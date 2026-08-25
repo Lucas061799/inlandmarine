@@ -116,9 +116,12 @@ export default function ReviewOptionFourPage() {
               premium={premiumOf(q)}
               meta={metaFor(q)}
               selected={selected === q.id}
-              onSelect={() =>
-                setSelected((prev) => (prev === q.id ? null : q.id))
-              }
+              onSelect={() => {
+                // Choosing a carrier opens its detail; dropping it closes it.
+                const next = selected === q.id ? null : q.id;
+                setSelected(next);
+                setOpenDetail(next);
+              }}
             >
               {(() => {
                 const open = openDetail === q.id;

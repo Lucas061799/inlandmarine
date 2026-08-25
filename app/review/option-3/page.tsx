@@ -11,9 +11,9 @@ import { CARRIER_QUOTES, type CarrierQuote } from "@/lib/quotes";
 const MINT_GRADIENT = "linear-gradient(180deg, #ADD797 0%, #73C9B7 100%)";
 
 /* ---------- Carrier row ----------
-   Everything the agent needs for one quote runs across the full width —
-   identity, both limit controls, commission, premium and the select action —
-   instead of stacking down a narrow card. */
+   Identity, both limit controls, commission, premium, the select action and
+   the selling points are all always visible. Only the enhanced coverage
+   limits collapse, since they are long. */
 function CarrierRow({
   quote,
   premium,
@@ -39,28 +39,30 @@ function CarrierRow({
           : "ring-1 ring-[#EAEAEA] hover:ring-[#c9e8df]"
       }`}
     >
-      {/* Identity line */}
-      <button
-        type="button"
-        onClick={onToggle}
-        aria-expanded={open}
-        className="flex w-full items-center justify-between gap-4 px-6 pt-5 text-left"
-      >
-        <div className="flex min-w-0 items-center gap-3">
+      <div className="flex items-start justify-between gap-4 px-6 pt-5">
+        <div className="flex min-w-0 flex-wrap items-center gap-3">
           <span className="text-[18px] font-semibold text-btis-navy">
             {quote.name}
           </span>
           {quote.badge && <CoverageBadge label={quote.badge} />}
         </div>
-        <div className="flex shrink-0 items-center gap-2 text-[13px] text-[#6C757D]">
-          {open ? "Hide coverages" : "View coverages"}
-          {open ? (
-            <ChevronDown className="h-5 w-5 text-btis-navy" />
-          ) : (
-            <ChevronRight className="h-5 w-5 text-btis-navy" />
-          )}
-        </div>
-      </button>
+
+        {enhanced && (
+            <button
+            type="button"
+            onClick={onToggle}
+            aria-expanded={open}
+            className="flex shrink-0 items-center gap-2 text-[13px] text-[#6C757D] transition hover:text-btis-navy"
+          >
+            {open ? "Hide" : "View"} enhanced coverage
+            {open ? (
+              <ChevronDown className="h-5 w-5 text-btis-navy" />
+            ) : (
+              <ChevronRight className="h-5 w-5 text-btis-navy" />
+            )}
+          </button>
+        )}
+      </div>
 
       {/* Two zones: what the agent can change on the left, what it costs and
           the action it leads to on the right. */}
@@ -98,19 +100,17 @@ function CarrierRow({
         </div>
       </div>
 
-      {open && (
-        <div className="border-t border-[#EAEAEA] px-6 py-5">
-          <ul className="flex flex-wrap gap-x-8 gap-y-2 text-[15px] text-btis-navy">
-            {quote.bullets.map((b, i) => (
-              <li key={b} className={i === 0 ? "font-semibold" : ""}>
-                · {b}
-              </li>
-            ))}
-          </ul>
+      <div className="border-t border-[#EAEAEA] px-6 py-5">
+        <ul className="flex flex-wrap gap-x-8 gap-y-2 text-[15px] text-btis-navy">
+          {quote.bullets.map((b, i) => (
+            <li key={b} className={i === 0 ? "font-semibold" : ""}>
+              · {b}
+            </li>
+          ))}
+        </ul>
 
-          {enhanced && <div className="mt-6">{enhanced}</div>}
-        </div>
-      )}
+        {open && enhanced && <div className="mt-6">{enhanced}</div>}
+      </div>
     </div>
   );
 }
